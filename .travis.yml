@@ -1,0 +1,26 @@
+sudo: required
+language: node_js
+node_js: '9'
+git:
+  depth: 1
+cache:
+  yarn: true
+branches:
+  only:
+  - master
+install: ./build.sh
+script: ./build.sh
+jobs:
+  fast_finish: true
+  include:
+  - stage: deploy
+    os: linux
+    deploy:
+      - provider: releases
+        api-key: $GITHUB_AUTH_TOKEN
+        name: che-editor-$(date +'%F-%T')
+        file_glob: true
+        file: ./*.tar.gz
+        skip_cleanup: true
+        on:
+          branch: master

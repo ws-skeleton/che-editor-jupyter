@@ -1,0 +1,28 @@
+version: 1.0.0
+type: Che Editor
+name: jupyter-ide
+id: org.eclipse.che.editor.jupyter
+title: Project Jupyter for Eclipse Che
+Description: Project Jupyter
+Icon: https://jupyter.org/assets/main-logo.svg
+endpoints:
+ -  name: "jupyter"
+    public: true
+    targetPort: 8888
+    attributes:
+      protocol: http
+      type: ide
+containers:
+ - name: theia-ide
+   image: jupyter/scipy-notebook
+   env:
+       - name: JUPYTER_TOKEN
+         value: token
+       - name: NOTEBOOK_DIR
+         value: /projects
+   volumes:
+       - mountPath: "/projects"
+         name: projects
+   ports:
+       - exposedPort: 8888
+   memory-limit: "512M"
