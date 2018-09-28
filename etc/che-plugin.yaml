@@ -14,7 +14,7 @@ endpoints:
       type: ide
 containers:
  - name: theia-ide
-   image: jupyter/scipy-notebook
+   image: getwarped/s2i-minimal-notebook
    env:
        - name: JUPYTER_TOKEN
          value: token
