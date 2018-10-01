@@ -14,11 +14,9 @@ endpoints:
       type: ide
 containers:
  - name: theia-ide
-   image: getwarped/s2i-minimal-notebook
+   image: ksmster/s2i-minimal-notebook
    env:
-       - name: JUPYTER_TOKEN
-         value: token
-       - name: NOTEBOOK_DIR
+       - name: JUPYTER_NOTEBOOK_DIR
          value: /projects
    volumes:
        - mountPath: "/projects"
