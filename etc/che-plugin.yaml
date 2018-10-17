@@ -13,7 +13,7 @@ endpoints:
       protocol: http
       type: ide
 containers:
- - name: theia-ide
+ - name: jupyter-ide
    image: ksmster/s2i-minimal-notebook
    env:
        - name: JUPYTER_NOTEBOOK_DIR
