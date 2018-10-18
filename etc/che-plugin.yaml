@@ -1,10 +1,10 @@
 version: 1.0.0
 type: Che Editor
-name: jupyter-ide
+name: jupyter-notebook
 id: org.eclipse.che.editor.jupyter
-title: Project Jupyter for Eclipse Che
-Description: Project Jupyter
-Icon: https://jupyter.org/assets/main-logo.svg
+title: Jupyter Notebook as Editor for Eclipse Che
+description: Jupyter Notebook as Editor for Eclipse Che
+icon: https://jupyter.org/assets/main-logo.svg
 endpoints:
  -  name: "jupyter"
     public: true
@@ -13,7 +13,7 @@ endpoints:
       protocol: http
       type: ide
 containers:
- - name: jupyter-ide
+ - name: jupyter-notebook
    image: ksmster/s2i-minimal-notebook
    env:
        - name: JUPYTER_NOTEBOOK_DIR
