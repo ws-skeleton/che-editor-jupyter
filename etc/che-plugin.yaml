@@ -24,3 +24,4 @@ containers:
    ports:
        - exposedPort: 8888
    memory-limit: "512M"
+   memoryLimit: "512M"
