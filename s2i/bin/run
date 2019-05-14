@@ -1,0 +1,76 @@
+#!/bin/bash
+
+set -eo pipefail
+
+
+### configuration ######################################################
+echo "
+#Setting Jupyter configuration ... "
+#jupyter notebook --generate-config
+#CONFIG=$"$HOME/.jupyter/jupyter_notebook_config.py"
+#if [ -f "$CONFIG" ]; then#
+#
+#    sed -i "s/c.NotebookApp.tornado_settings = {}/c.NotebookApp.tornado_settings = {'static_url_prefix':'\/notebook\/static\/'}/1" $CONFIG
+#    sed -i -E "s/#\s?c.NotebookApp.tornado_settings/c.NotebookApp.tornado_settings/1" $CONFIG
+#    echo "c.NotebookApp.tornado_settings = {'static_url_prefix':'/notebook/static/'}"
+#fi
+
+
+ set default ip to 0.0.0.0
+if [[ "$NOTEBOOK_ARGS $@" != *"--ip="* ]]; then
+  NOTEBOOK_ARGS="--ip=0.0.0.0 --NotebookApp.token=''"
+fi
+
+# Ensure that assigned uid has entry in /etc/passwd.
+
+if [ `id -u` -ge 10000 ]; then
+    cat /etc/passwd | sed -e "s/^$NB_USER:/builder:/" > /tmp/passwd
+    echo "$NB_USER:x:`id -u`:`id -g`:,,,:/home/$NB_USER:/bin/bash" >> /tmp/passwd
+    cat /tmp/passwd > /etc/passwd
+    rm /tmp/passwd
+fi
+
+# Calculate login token from the supplied password.
+
+if [ x"${JUPYTER_NOTEBOOK_PASSWORD}" != x"" ]; then
+    NOTEBOOK_ARGS=--NotebookApp.password=`python -c "import notebook.auth; \
+        print(notebook.auth.passwd(\"$JUPYTER_NOTEBOOK_PASSWORD\"))"`
+    unset JUPYTER_NOTEBOOK_PASSWORD
+fi
+
+# Copy files into volume if specified and change notebook directory.
+
+JUPYTER_NOTEBOOK_DIR=${JUPYTER_NOTEBOOK_DIR:-/home/$NB_USER/work}
+
+if [ x"${PERSISTENT_VOLUME_ROOTDIR}" != x"" ]; then
+    PERSISTENT_VOLUME_WORKSPACE=${PERSISTENT_VOLUME_WORKSPACE:-work}
+
+    WORKDIR=${PERSISTENT_VOLUME_ROOTDIR}/${PERSISTENT_VOLUME_WORKSPACE}
+
+    if [ ! -d ${WORKDIR} ]; then
+        mkdir -p ${WORKDIR}
+        cp -rp ${JUPYTER_NOTEBOOK_DIR}/. ${WORKDIR}
+    fi
+
+    JUPYTER_NOTEBOOK_DIR=${PERSISTENT_VOLUME_ROOTDIR}
+fi
+
+NOTEBOOK_ARGS="$NOTEBOOK_ARGS --notebook-dir=${JUPYTER_NOTEBOOK_DIR}"
+
+cd ${JUPYTER_NOTEBOOK_DIR}
+
+# Activate Python virtual environment if one exists in the volume.
+
+if [ x"${PERSISTENT_VOLUME_ROOTDIR}" != x"" ]; then
+    PERSISTENT_VOLUME_VIRTUALENV=${PERSISTENT_VOLUME_VIRTUALENV:-venv}
+
+    VENVDIR=${PERSISTENT_VOLUME_ROOTDIR}/${PERSISTENT_VOLUME_VIRTUALENV}
+
+    if [ -f "${VENVDIR}/bin/jupyter" ]; then
+        source activate ${VENVDIR}
+    fi
+fi
+
+# Start the Jupyter notebook instance.
+
+exec /usr/local/bin/start-notebook.sh $NOTEBOOK_ARGS
