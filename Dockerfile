@@ -68,5 +68,4 @@ RUN echo "c.NotebookApp.tornado_settings = {" >> /etc/jupyter/jupyter_notebook_c
 # so we can set an environment variable for notebook password.
 
 RUN pip install plotly pandas numpy
-
 CMD [ "/opt/app-root/s2i/bin/run" ]
